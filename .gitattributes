@@ -1,0 +1,4 @@
+# Los scripts que se ejecutan dentro de Linux (Docker) deben tener finales de línea LF
+*.sh text eol=lf
+Dockerfile text eol=lf
+docker/** text eol=lf

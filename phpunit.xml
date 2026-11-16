@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="tests/bootstrap.php"
+         colors="true"
+         cacheDirectory=".phpunit.cache"
+         displayDetailsOnTestsThatTriggerWarnings="true">
+    <testsuites>
+        <testsuite name="Pruebas unitarias VoluntaRed">
+            <directory>tests/Unit</directory>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory>app</directory>
+        </include>
+        <exclude>
+            <directory>app/Views</directory>
+        </exclude>
+    </source>
+    <php>
+        <env name="VR_DB_NOMBRE" value="voluntared_test" force="true"/>
+        <env name="VR_CORREO_DRIVER" value="ninguno" force="true"/>
+    </php>
+</phpunit>

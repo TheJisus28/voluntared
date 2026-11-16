@@ -1,0 +1,13 @@
+# Lo que no se copia a la imagen de Docker
+.git
+.gitignore
+.dockerignore
+Dockerfile
+docker-compose.yml
+.env
+# Las dependencias se instalan dentro de la imagen con Composer
+vendor/
+.phpunit.cache/
+storage/correos/*.html
+storage/respaldos/*.sql
+storage/logs/*

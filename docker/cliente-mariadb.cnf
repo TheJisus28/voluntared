@@ -1,0 +1,4 @@
+# Cliente de MariaDB del contenedor (lo usa database/respaldo.php con mysqldump).
+# La base de datos corre en la red interna de Docker sin TLS; el cliente 11.x lo exige por defecto.
+[client]
+skip-ssl

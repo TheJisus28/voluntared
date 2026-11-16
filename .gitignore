@@ -1,0 +1,18 @@
+/.phpunit.cache/
+/storage/correos/*.html
+/storage/respaldos/*.sql
+# Archivos subidos por los usuarios (se conservan los de demostración)
+/storage/documentos/*
+!/storage/documentos/.gitkeep
+!/storage/documentos/demo-*.pdf
+/public/uploads/fotos/*
+!/public/uploads/fotos/.gitkeep
+!/public/uploads/fotos/logo-*.svg
+# Dependencias de Composer (se instalan con `composer install`)
+/vendor/
+# Variables de entorno locales
+.env
+# Archivos generados en tiempo de ejecución
+/storage/cache/*
+/storage/logs/*
+!/storage/logs/.gitkeep

@@ -1,0 +1,106 @@
+# =====================================================================
+# VoluntaRed con Docker: levanta todo con un solo comando
+#
+#   docker compose up -d --build
+#
+#   Aplicación:  http://localhost:8080
+#   phpMyAdmin:  http://localhost:8081   (usuario voluntared / voluntared2026)
+#   Correos:     http://localhost:8080/dev/correos
+#
+# La primera vez se crea la base de datos con los datos de demostración.
+# Los valores marcados con ${...} pueden cambiarse en un archivo .env.
+# =====================================================================
+name: voluntared
+
+services:
+  app:
+    build: .
+    image: voluntared-app
+    container_name: voluntared-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${VR_PUERTO_WEB:-8080}:80"
+    environment:
+      TZ: America/Bogota
+      VR_DOCKER: "1"
+      VR_URL: "http://localhost:${VR_PUERTO_WEB:-8080}"
+      # "local" habilita la bandeja de correos /dev/correos; en producción usa otro valor y SMTP.
+      VR_ENTORNO: ${VR_ENTORNO:-local}
+      # Clave para firmar los JWT (mínimo 32 caracteres). Cámbiala en producción.
+      VR_CLAVE: ${VR_CLAVE:-docker-cambie-esta-clave-en-produccion-4e7b9c2a1f6d8e3b5a0c7f9d2e4b6a81}
+      VR_DB_HOST: db
+      VR_DB_PUERTO: "3306"
+      VR_DB_NOMBRE: voluntared
+      VR_DB_USUARIO: voluntared
+      VR_DB_CLAVE: ${VR_DB_CLAVE:-voluntared2026}
+      # 1 = datos de demostración; 0 = solo catálogos y administrador.
+      VR_DATOS_DEMO: ${VR_DATOS_DEMO:-1}
+      # "log" guarda los correos en storage/correos; "smtp" los envía con los datos de abajo.
+      VR_CORREO_DRIVER: ${VR_CORREO_DRIVER:-log}
+      VR_SMTP_HOST: ${VR_SMTP_HOST:-smtp.gmail.com}
+      VR_SMTP_PUERTO: ${VR_SMTP_PUERTO:-587}
+      VR_SMTP_USUARIO: ${VR_SMTP_USUARIO:-}
+      VR_SMTP_CLAVE: ${VR_SMTP_CLAVE:-}
+      VR_SMTP_CIFRADO: ${VR_SMTP_CIFRADO:-tls}
+      VR_SMTP_REMITENTE: ${VR_SMTP_REMITENTE:-no-responder@voluntared.co}
+      # «Continuar con Google» (Firebase Authentication). Son datos públicos de la app web;
+      # con VR_FIREBASE_PROJECT_ID vacío el botón de Google no se muestra.
+      VR_FIREBASE_API_KEY: ${VR_FIREBASE_API_KEY:-AIzaSyA72DQNWn8pBPtBI_gq4x5qBLsYmaP76bU}
+      VR_FIREBASE_AUTH_DOMAIN: ${VR_FIREBASE_AUTH_DOMAIN:-voluntared-unicordoba.firebaseapp.com}
+      VR_FIREBASE_PROJECT_ID: ${VR_FIREBASE_PROJECT_ID-voluntared-unicordoba}
+      VR_FIREBASE_APP_ID: ${VR_FIREBASE_APP_ID:-1:443720951413:web:5eaec498ec86b54d6c7a3c}
+    volumes:
+      - uploads:/var/www/html/public/uploads
+      - storage:/var/www/html/storage
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "-o", "/dev/null", "http://localhost/login"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  db:
+    image: mariadb:10.11
+    container_name: voluntared-db
+    restart: unless-stopped
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    environment:
+      TZ: America/Bogota
+      MARIADB_DATABASE: voluntared
+      MARIADB_USER: voluntared
+      MARIADB_PASSWORD: ${VR_DB_CLAVE:-voluntared2026}
+      MARIADB_ROOT_PASSWORD: ${VR_DB_CLAVE_ROOT:-root2026}
+    volumes:
+      - datos_bd:/var/lib/mysql
+      # Permisos sobre la base de datos de las pruebas automatizadas (voluntared_test).
+      - ./docker/mariadb:/docker-entrypoint-initdb.d:ro
+    ports:
+      # Puerto 3307 para no chocar con el MySQL de XAMPP (3306).
+      - "${VR_PUERTO_BD:-3307}:3306"
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+  phpmyadmin:
+    image: phpmyadmin:5.2
+    container_name: voluntared-phpmyadmin
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${VR_PUERTO_PMA:-8081}:80"
+    environment:
+      PMA_HOST: db
+      UPLOAD_LIMIT: 64M
+
+volumes:
+  datos_bd:
+  uploads:
+  storage:

@@ -1,0 +1,7 @@
+# VoluntaRed - redirige todas las peticiones a la carpeta public/
+# (permite abrir http://localhost/voluntared/ en XAMPP sin exponer app/, storage/ ni vendor/)
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^$ public/ [L]
+    RewriteRule ^((?!public/).*)$ public/$1 [L,NC]
+</IfModule>
